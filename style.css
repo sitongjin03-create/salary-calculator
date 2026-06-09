@@ -241,13 +241,30 @@ body {
   justify-content: space-between;
 }
 
-/* 纯时间输入 */
+/* 右侧控件行：unit文字 + input + unit文字 */
+.setting-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ¥ 和 分钟 纯文字 */
+.unit-text {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-light);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/* 统一输入框 —— 四行完全一致 */
 .setting-input {
-  width: 140px;
-  height: 56px;
+  width: 120px;
+  height: 48px;
   border: 1px solid #DFE5E1;
-  border-radius: 16px;
-  padding: 0 16px;
+  border-radius: 14px;
+  padding: 0 12px;
   font-size: 1rem;
   font-family: inherit;
   color: var(--text);
@@ -263,57 +280,6 @@ body {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(61, 90, 86, 0.08);
-}
-
-/* ===== 统一复合输入组 ===== */
-.input-group {
-  width: 140px;
-  height: 56px;
-  border: 1px solid #DFE5E1;
-  border-radius: 16px;
-  background: #FFFFFF;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-  box-sizing: border-box;
-  flex-shrink: 0;
-}
-
-.input-group:focus-within {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(61, 90, 86, 0.08);
-}
-
-/* 前缀 / 后缀 */
-.input-prefix,
-.input-suffix {
-  flex-shrink: 0;
-  height: 100%;
-  padding: 0 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--primary);
-  font-weight: 600;
-  font-size: 1rem;
-  background: #F4F7F5;
-  user-select: none;
-}
-
-/* 内嵌输入框 */
-.group-input {
-  flex: 1;
-  height: 100%;
-  border: none;
-  outline: none;
-  background: transparent;
-  padding: 0 12px;
-  font-size: 1rem;
-  font-family: inherit;
-  color: var(--text);
-  text-align: center;
-  box-sizing: border-box;
-  min-width: 0;
 }
 
 /* ===== Main Card ===== */
@@ -686,29 +652,8 @@ body {
     color: #C8D5D0;
   }
 
-  .input-group {
-    background: rgba(45, 50, 48, 0.9);
-    border-color: #404540;
-  }
-
-  .input-group:focus-within {
-    border-color: #6A8A7E;
-    box-shadow: 0 0 0 3px rgba(106, 138, 126, 0.15);
-    background: rgba(55, 60, 58, 0.95);
-  }
-
-  .input-prefix,
-  .input-suffix {
-    background: rgba(61, 90, 86, 0.12);
-    color: #B0C0BA;
-  }
-
-  .group-input {
-    color: #D0D4D2;
-  }
-
-  .group-input::placeholder {
-    color: #5A605E;
+  .unit-text {
+    color: #8A908D;
   }
 
   .settings-overlay {

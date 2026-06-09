@@ -47,16 +47,16 @@
           </div>
           <div class="setting-row">
             <label class="setting-label" for="dailySalary">日薪</label>
-            <div class="input-group" id="salaryGroup">
-              <span class="input-prefix">¥</span>
-              <input type="text" inputmode="numeric" pattern="[0-9]*" class="group-input" id="dailySalary" value="500" placeholder="500">
+            <div class="setting-control">
+              <span class="unit-text">¥</span>
+              <input type="text" inputmode="numeric" pattern="[0-9]*\.?[0-9]*" class="setting-input" id="dailySalary" value="500" placeholder="500">
             </div>
           </div>
           <div class="setting-row">
             <label class="setting-label" for="breakTime">午休时长</label>
-            <div class="input-group" id="breakGroup">
-              <input type="text" inputmode="numeric" pattern="[0-9]*" class="group-input" id="breakTime" value="60" placeholder="60">
-              <span class="input-suffix">分钟</span>
+            <div class="setting-control">
+              <input type="text" inputmode="numeric" pattern="[0-9]*" class="setting-input" id="breakTime" value="60" placeholder="60">
+              <span class="unit-text">分钟</span>
             </div>
           </div>
         </div>
