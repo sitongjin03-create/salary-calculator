@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图标生成器 - 工资计算器</title>
+  <style>
+    body {
+      font-family: -apple-system, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      text-align: center;
+      max-width: 480px;
+      width: 100%;
+    }
+    h1 { font-size: 1.5rem; color: #4A4A4A; margin-bottom: 8px; }
+    p { color: #8A8A8A; font-size: 0.9rem; margin-bottom: 24px; }
+    canvas {
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin: 8px;
+    }
+    .previews {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .preview-item p {
+      margin: 8px 0 0;
+      font-size: 0.8rem;
+    }
+    button {
+      background: linear-gradient(135deg, #FF9AAD, #FFB5C2);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 32px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(255,154,173,0.3);
+      transition: transform 0.2s;
+    }
+    button:active { transform: scale(0.96); }
+    .note {
+      margin-top: 16px;
+      font-size: 0.8rem;
+      color: #B0B0B0;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🖼️ 生成 PWA 图标</h1>
+    <p>点击下方按钮生成并下载图标文件</p>
+
+    <div class="previews">
+      <div class="preview-item">
+        <canvas id="preview192" width="192" height="192"></canvas>
+        <p>192×192</p>
+      </div>
+      <div class="preview-item">
+        <canvas id="preview512" width="512" height="512"></canvas>
+        <p>512×512</p>
+      </div>
+    </div>
+
+    <button onclick="generateAll()">📥 一键生成并下载所有图标</button>
+    <p class="note">下载后请将 icon-192.png 和 icon-512.png 放到项目根目录</p>
+  </div>
+
+  <script>
+    function drawIcon(canvas, size) {
+      const ctx = canvas.getContext('2d');
+      const s = size;
+
+      // 背景圆角矩形
+      const r = s * 0.2;
+      ctx.beginPath();
+      ctx.moveTo(r, 0);
+      ctx.lineTo(s - r, 0);
+      ctx.quadraticCurveTo(s, 0, s, r);
+      ctx.lineTo(s, s - r);
+      ctx.quadraticCurveTo(s, s, s - r, s);
+      ctx.lineTo(r, s);
+      ctx.quadraticCurveTo(0, s, 0, s - r);
+      ctx.lineTo(0, r);
+      ctx.quadraticCurveTo(0, 0, r, 0);
+      ctx.closePath();
+
+      // 渐变填充
+      const grad = ctx.createLinearGradient(0, 0, s, s);
+      grad.addColorStop(0, '#FFB5C2');
+      grad.addColorStop(1, '#FF9AAD');
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // 内圈装饰
+      ctx.beginPath();
+      ctx.arc(s * 0.5, s * 0.5, s * 0.3, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.3)';
+      ctx.fill();
+
+      // 钱袋 emoji
+      const fontSize = s * 0.45;
+      ctx.font = `${fontSize}px system-ui, -apple-system, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('💰', s * 0.5, s * 0.52);
+
+      // 小星星装饰
+      const starSize = s * 0.06;
+      ctx.font = `${starSize}px system-ui, -apple-system, sans-serif`;
+      const stars = [
+        [0.22, 0.25],
+        [0.78, 0.25],
+        [0.22, 0.78],
+        [0.78, 0.78],
+      ];
+      stars.forEach(([x, y]) => {
+        ctx.fillText('✨', s * x, s * y);
+      });
+    }
+
+    function downloadPNG(canvas, filename) {
+      canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    }
+
+    function generateAll() {
+      const c192 = document.getElementById('preview192');
+      const c512 = document.getElementById('preview512');
+
+      drawIcon(c192, 192);
+      drawIcon(c512, 512);
+
+      // 延迟下载，等 canvas 渲染完成
+      setTimeout(() => {
+        downloadPNG(c192, 'icon-192.png');
+      }, 100);
+
+      setTimeout(() => {
+        downloadPNG(c512, 'icon-512.png');
+      }, 300);
+    }
+
+    // 页面加载时预览
+    window.addEventListener('DOMContentLoaded', () => {
+      drawIcon(document.getElementById('preview192'), 192);
+      drawIcon(document.getElementById('preview512'), 512);
+    });
+  </script>
+</body>
+</html>
