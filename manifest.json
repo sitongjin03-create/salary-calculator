@@ -1,11 +1,11 @@
 {
-  "name": "今日工资实时计算器",
-  "short_name": "工资计算器",
-  "description": "打工人专属 - 每秒刷新，看看今天赚了多少钱",
+  "name": "今日收入仪表盘",
+  "short_name": "收入仪表盘",
+  "description": "实时记录你的时间价值 - 个人收入仪表盘",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#FFE4E8",
-  "theme_color": "#FFB5C2",
+  "background_color": "#F5F3EE",
+  "theme_color": "#3D5A56",
   "orientation": "portrait",
   "lang": "zh-CN",
   "icons": [

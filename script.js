@@ -4,7 +4,7 @@
 const $currentTime = document.getElementById('currentTime');
 const $currentDate = document.getElementById('currentDate');
 const $statusSection = document.getElementById('statusSection');
-const $statusEmoji = document.getElementById('statusEmoji');
+const $statusIndicator = document.getElementById('statusIndicator');
 const $statusText = document.getElementById('statusText');
 const $progressBar = document.getElementById('progressBar');
 const $progressLabel = document.getElementById('progressLabel');
@@ -13,7 +13,7 @@ const $earnedMoney = document.getElementById('earnedMoney');
 const $remainingTime = document.getElementById('remainingTime');
 const $remainingLabel = document.getElementById('remainingLabel');
 const $mainCard = document.getElementById('mainCard');
-const $settingsPanel = document.getElementById('settingsPanel');
+const $settingsOverlay = document.getElementById('settingsOverlay');
 const $settingsToggle = document.getElementById('settingsToggle');
 
 // 设置输入元素
@@ -22,6 +22,7 @@ const $endTime = document.getElementById('endTime');
 const $dailySalary = document.getElementById('dailySalary');
 const $breakTime = document.getElementById('breakTime');
 const $saveBtn = document.getElementById('saveSettings');
+const $cancelBtn = document.getElementById('cancelSettings');
 
 // 默认设置
 const DEFAULT_SETTINGS = {
@@ -96,13 +97,27 @@ function showToast(message) {
 
 /* ===== 事件绑定 ===== */
 function bindEvents() {
-  // 设置面板开关
+  // 打开设置面板
   $settingsToggle.addEventListener('click', () => {
-    const isOpen = $settingsPanel.classList.toggle('open');
-    $settingsToggle.classList.toggle('active', isOpen);
+    // 打开前先把当前设置回填到表单
+    populateForm();
+    $settingsOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
   });
 
-  // 保存设置
+  // 点击遮罩关闭
+  $settingsOverlay.addEventListener('click', (e) => {
+    if (e.target === $settingsOverlay) {
+      closeSettings();
+    }
+  });
+
+  // 取消按钮
+  $cancelBtn.addEventListener('click', () => {
+    closeSettings();
+  });
+
+  // 保存按钮
   $saveBtn.addEventListener('click', () => {
     const startTime = $startTime.value;
     const endTime = $endTime.value;
@@ -139,19 +154,14 @@ function bindEvents() {
 
     saveSettings();
     updateDisplay();
-
-    // 关闭设置面板
-    $settingsPanel.classList.remove('open');
-    $settingsToggle.classList.remove('active');
+    closeSettings();
     showToast('✅ 设置已保存');
   });
+}
 
-  // 输入框变化时自动保存（实时生效）
-  [$startTime, $endTime, $dailySalary, $breakTime].forEach(el => {
-    el.addEventListener('change', () => {
-      $saveBtn.click();
-    });
-  });
+function closeSettings() {
+  $settingsOverlay.classList.remove('open');
+  document.body.style.overflow = '';
 }
 
 /* ===== 核心计算逻辑 ===== */
@@ -231,12 +241,12 @@ function formatDateCN(date) {
 }
 
 function formatDuration(totalMinutes) {
-  if (totalMinutes <= 0) return '0小时0分';
+  if (totalMinutes <= 0) return '0h 0m';
   const sign = totalMinutes < 0 ? '-' : '';
   const abs = Math.abs(totalMinutes);
   const hours = Math.floor(abs / 60);
   const minutes = Math.floor(abs % 60);
-  return `${sign}${hours}小时${minutes}分`;
+  return `${sign}${hours}h ${minutes}m`;
 }
 
 function formatMoney(amount) {
@@ -275,30 +285,18 @@ function updateStatusSection(data) {
   switch (data.state) {
     case 'idle': {
       $statusSection.classList.add('state-idle');
-      $statusEmoji.textContent = '🌙';
       const secondsUntilStart = Math.max(0, (data.workStart - data.now) / 1000);
-      $statusText.textContent = `还未开始赚钱 · ${formatCountdown(secondsUntilStart)}后开始`;
+      $statusText.textContent = `今日尚未开始 · ${formatCountdown(secondsUntilStart)} 后开始`;
       break;
     }
     case 'working': {
       $statusSection.classList.add('state-working');
-      // 根据进度选择不同的 emoji
-      if (data.progress < 0.3) {
-        $statusEmoji.textContent = '☕';
-      } else if (data.progress < 0.6) {
-        $statusEmoji.textContent = '💼';
-      } else if (data.progress < 0.9) {
-        $statusEmoji.textContent = '🔥';
-      } else {
-        $statusEmoji.textContent = '🏃';
-      }
-      $statusText.textContent = '打工中...加油！';
+      $statusText.textContent = '进行中 · 收入实时累计';
       break;
     }
     case 'done': {
       $statusSection.classList.add('state-done');
-      $statusEmoji.textContent = '🎉';
-      $statusText.textContent = '今日已完成！辛苦啦～';
+      $statusText.textContent = '今日已完成';
       break;
     }
   }
@@ -311,11 +309,11 @@ function updateProgress(data) {
 
   // 进度条颜色变化
   if (data.state === 'done') {
-    $progressBar.style.background = 'linear-gradient(90deg, #FFD54F, #FFB74D)';
+    $progressBar.style.background = 'linear-gradient(90deg, #C8963E, #D4A84C)';
   } else if (data.progress > 0.8) {
-    $progressBar.style.background = 'linear-gradient(90deg, #81C784, #66BB6A)';
+    $progressBar.style.background = 'linear-gradient(90deg, #4A7066, #5C8A7E)';
   } else {
-    $progressBar.style.background = 'linear-gradient(90deg, var(--pink), var(--blue))';
+    $progressBar.style.background = 'linear-gradient(90deg, #3D5A56, #5C8A7E)';
   }
 }
 
@@ -334,7 +332,7 @@ function updateStats(data) {
       $earnedMoney.textContent = formatMoney(data.earned);
       const secondsUntilEnd = Math.max(0, (data.workEnd - data.now) / 1000);
       $remainingTime.textContent = formatCountdown(secondsUntilEnd);
-      $remainingLabel.textContent = '距离下班';
+      $remainingLabel.textContent = '剩余时间';
       break;
     }
     case 'done': {
