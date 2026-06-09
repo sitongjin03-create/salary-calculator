@@ -1,52 +1,52 @@
-/* ===== 今日工资实时计算器 - 核心逻辑 ===== */
+/* ===== 今日收入仪表盘 - 核心逻辑 ===== */
 
-// DOM 元素
-const $currentTime = document.getElementById('currentTime');
-const $currentDate = document.getElementById('currentDate');
-const $statusSection = document.getElementById('statusSection');
-const $statusIndicator = document.getElementById('statusIndicator');
-const $statusText = document.getElementById('statusText');
-const $progressBar = document.getElementById('progressBar');
-const $progressLabel = document.getElementById('progressLabel');
-const $workedTime = document.getElementById('workedTime');
-const $earnedMoney = document.getElementById('earnedMoney');
-const $remainingTime = document.getElementById('remainingTime');
-const $remainingLabel = document.getElementById('remainingLabel');
-const $mainCard = document.getElementById('mainCard');
-const $settingsOverlay = document.getElementById('settingsOverlay');
-const $settingsToggle = document.getElementById('settingsToggle');
+// 安全获取 DOM 元素
+function $(id) { return document.getElementById(id); }
 
-// 设置输入元素
-const $startTime = document.getElementById('startTime');
-const $endTime = document.getElementById('endTime');
-const $dailySalary = document.getElementById('dailySalary');
-const $breakTime = document.getElementById('breakTime');
-const $saveBtn = document.getElementById('saveSettings');
-const $cancelBtn = document.getElementById('cancelSettings');
+const $currentTime   = $('currentTime');
+const $currentDate   = $('currentDate');
+const $statusSection = $('statusSection');
+const $statusText    = $('statusText');
+const $progressBar   = $('progressBar');
+const $progressLabel = $('progressLabel');
+const $workedTime    = $('workedTime');
+const $earnedMoney   = $('earnedMoney');
+const $remainingTime = $('remainingTime');
+const $remainingLabel = $('remainingLabel');
+const $settingsOverlay = $('settingsOverlay');
+const $settingsToggle  = $('settingsToggle');
+const $startTime    = $('startTime');
+const $endTime      = $('endTime');
+const $dailySalary  = $('dailySalary');
+const $breakTime    = $('breakTime');
+const $saveBtn      = $('saveSettings');
+const $cancelBtn    = $('cancelSettings');
 
 // 默认设置
-const DEFAULT_SETTINGS = {
+var DEFAULT_SETTINGS = {
   startTime: '09:00',
   endTime: '18:00',
   dailySalary: 500,
   breakMinutes: 60,
 };
 
-// 当前设置（运行时使用）
-let settings = { ...DEFAULT_SETTINGS };
-
-// Toast 元素
-let toastEl = null;
+// 当前设置
+var settings = {};
+var toastEl = null;
+var updateTimer = null;
 
 /* ===== 初始化 ===== */
 function init() {
+  // 重置 settings
+  settings = Object.assign({}, DEFAULT_SETTINGS);
   loadSettings();
   populateForm();
   createToast();
   bindEvents();
   updateDisplay();
   // 每秒刷新
-  setInterval(updateDisplay, 1000);
+  if (updateTimer) clearInterval(updateTimer);
+  updateTimer = setInterval(updateDisplay, 1000);
 }
 
 /* ===== 设置持久化 ===== */
@@ -71,10 +71,10 @@ function saveSettings() {
 }
 
 function populateForm() {
-  $startTime.value = settings.startTime;
-  $endTime.value = settings.endTime;
-  $dailySalary.value = settings.dailySalary;
-  $breakTime.value = settings.breakMinutes;
+  if ($startTime)   $startTime.value   = settings.startTime;
+  if ($endTime)     $endTime.value     = settings.endTime;
+  if ($dailySalary) $dailySalary.value = settings.dailySalary;
+  if ($breakTime)   $breakTime.value   = settings.breakMinutes;
 }
 
 /* ===== Toast ===== */
@@ -97,70 +97,75 @@ function showToast(message) {
 
 /* ===== 事件绑定 ===== */
 function bindEvents() {
-  // 打开设置面板
-  $settingsToggle.addEventListener('click', () => {
-    // 打开前先把当前设置回填到表单
-    populateForm();
-    $settingsOverlay.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  });
+  // 设置按钮
+  if ($settingsToggle && $settingsOverlay) {
+    $settingsToggle.addEventListener('click', function () {
+      populateForm();
+      $settingsOverlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    });
 
-  // 点击遮罩关闭
-  $settingsOverlay.addEventListener('click', (e) => {
-    if (e.target === $settingsOverlay) {
-      closeSettings();
-    }
-  });
+    // 点击遮罩关闭
+    $settingsOverlay.addEventListener('click', function (e) {
+      if (e.target === $settingsOverlay) {
+        closeSettings();
+      }
+    });
+  }
 
   // 取消按钮
-  $cancelBtn.addEventListener('click', () => {
-    closeSettings();
-  });
+  if ($cancelBtn) {
+    $cancelBtn.addEventListener('click', function () {
+      closeSettings();
+    });
+  }
 
   // 保存按钮
-  $saveBtn.addEventListener('click', () => {
-    const startTime = $startTime.value;
-    const endTime = $endTime.value;
-    const dailySalary = parseFloat($dailySalary.value);
-    const breakMinutes = parseInt($breakTime.value, 10);
+  if ($saveBtn) {
+    $saveBtn.addEventListener('click', function () {
+      if (!$startTime || !$endTime || !$dailySalary || !$breakTime) return;
 
-    // 验证
-    if (!startTime || !endTime) {
-      showToast('⚠️ 请设置上下班时间');
-      return;
-    }
+      var startTime    = $startTime.value;
+      var endTime      = $endTime.value;
+      var dailySalary  = parseFloat($dailySalary.value);
+      var breakMinutes = parseInt($breakTime.value, 10);
 
-    if (startTime >= endTime) {
-      showToast('⚠️ 上班时间必须早于下班时间');
-      return;
-    }
+      if (!startTime || !endTime) {
+        showToast('请设置上下班时间');
+        return;
+      }
+      if (startTime >= endTime) {
+        showToast('上班时间必须早于下班时间');
+        return;
+      }
+      if (isNaN(dailySalary) || dailySalary < 0) {
+        showToast('请输入有效的日薪');
+        return;
+      }
+      if (isNaN(breakMinutes) || breakMinutes < 0) {
+        showToast('请输入有效的休息时长');
+        return;
+      }
 
-    if (isNaN(dailySalary) || dailySalary < 0) {
-      showToast('⚠️ 请输入有效的日薪');
-      return;
-    }
+      settings = {
+        startTime: startTime,
+        endTime: endTime,
+        dailySalary: dailySalary,
+        breakMinutes: breakMinutes,
+      };
 
-    if (isNaN(breakMinutes) || breakMinutes < 0) {
-      showToast('⚠️ 请输入有效的休息时长');
-      return;
-    }
-
-    settings = {
-      startTime,
-      endTime,
-      dailySalary,
-      breakMinutes,
-    };
-
-    saveSettings();
-    updateDisplay();
-    closeSettings();
-    showToast('✅ 设置已保存');
-  });
+      saveSettings();
+      updateDisplay();
+      closeSettings();
+      showToast('设置已保存');
+    });
+  }
 }
 
 function closeSettings() {
-  $settingsOverlay.classList.remove('open');
+  if ($settingsOverlay) {
+    $settingsOverlay.classList.remove('open');
+  }
   document.body.style.overflow = '';
 }
 
@@ -266,11 +271,23 @@ function formatCountdown(totalSeconds) {
 
 /* ===== 更新显示 ===== */
 function updateDisplay() {
-  const data = calculateState();
+  var data;
+  try {
+    data = calculateState();
+    if (!data) throw new Error('calculateState returned null');
+  } catch (e) {
+    // 计算失败时使用当前时间作为兜底
+    var now = new Date();
+    data = {
+      now: now, state: 'idle', progress: 0, earned: 0,
+      totalPaidMinutes: 0, paidElapsed: 0,
+      workStart: now, workEnd: now,
+    };
+  }
 
   // 当前时间
-  $currentTime.textContent = formatTime(data.now);
-  $currentDate.textContent = formatDateCN(data.now);
+  if ($currentTime)  $currentTime.textContent  = formatTime(data.now);
+  if ($currentDate)  $currentDate.textContent  = formatDateCN(data.now);
 
   // 根据状态更新 UI
   updateStatusSection(data);
@@ -279,14 +296,14 @@ function updateDisplay() {
 }
 
 function updateStatusSection(data) {
-  // 移除旧的状态类
+  if (!$statusSection || !$statusText) return;
   $statusSection.classList.remove('state-idle', 'state-working', 'state-done');
 
   switch (data.state) {
     case 'idle': {
       $statusSection.classList.add('state-idle');
-      const secondsUntilStart = Math.max(0, (data.workStart - data.now) / 1000);
-      $statusText.textContent = `今日尚未开始 · ${formatCountdown(secondsUntilStart)} 后开始`;
+      var secToStart = Math.max(0, (data.workStart - data.now) / 1000);
+      $statusText.textContent = '今日尚未开始 · ' + formatCountdown(secToStart) + ' 后开始';
       break;
     }
     case 'working': {
@@ -299,15 +316,19 @@ function updateStatusSection(data) {
       $statusText.textContent = '今日已完成';
       break;
     }
+    default: {
+      $statusText.textContent = '等待中...';
+      break;
+    }
   }
 }
 
 function updateProgress(data) {
-  const percent = Math.round(data.progress * 100);
-  $progressBar.style.width = `${percent}%`;
-  $progressLabel.textContent = `${percent}%`;
+  if (!$progressBar || !$progressLabel) return;
+  var percent = Math.round(data.progress * 100);
+  $progressBar.style.width = percent + '%';
+  $progressLabel.textContent = percent + '%';
 
-  // 进度条颜色变化
   if (data.state === 'done') {
     $progressBar.style.background = 'linear-gradient(90deg, #C8963E, #D4A84C)';
   } else if (data.progress > 0.8) {
@@ -320,27 +341,32 @@ function updateProgress(data) {
 function updateStats(data) {
   switch (data.state) {
     case 'idle': {
-      $workedTime.textContent = '0小时0分';
-      $earnedMoney.textContent = '¥0.00';
-      const secondsUntilStart = Math.max(0, (data.workStart - data.now) / 1000);
-      $remainingTime.textContent = formatCountdown(secondsUntilStart);
-      $remainingLabel.textContent = '距离上班';
+      if ($workedTime)    $workedTime.textContent    = formatDuration(0);
+      if ($earnedMoney)   $earnedMoney.textContent   = formatMoney(0);
+      var secToStart = Math.max(0, (data.workStart - data.now) / 1000);
+      if ($remainingTime) $remainingTime.textContent = formatCountdown(secToStart);
+      if ($remainingLabel) $remainingLabel.textContent = '距离上班';
       break;
     }
     case 'working': {
-      $workedTime.textContent = formatDuration(data.paidElapsed);
-      $earnedMoney.textContent = formatMoney(data.earned);
-      const secondsUntilEnd = Math.max(0, (data.workEnd - data.now) / 1000);
-      $remainingTime.textContent = formatCountdown(secondsUntilEnd);
-      $remainingLabel.textContent = '剩余时间';
+      if ($workedTime)    $workedTime.textContent    = formatDuration(data.paidElapsed);
+      if ($earnedMoney)   $earnedMoney.textContent   = formatMoney(data.earned);
+      var secToEnd = Math.max(0, (data.workEnd - data.now) / 1000);
+      if ($remainingTime) $remainingTime.textContent = formatCountdown(secToEnd);
+      if ($remainingLabel) $remainingLabel.textContent = '剩余时间';
       break;
     }
     case 'done': {
-      // 显示全天数据
-      $workedTime.textContent = formatDuration(data.totalPaidMinutes);
-      $earnedMoney.textContent = formatMoney(settings.dailySalary);
-      $remainingTime.textContent = '--';
-      $remainingLabel.textContent = '已完成';
+      if ($workedTime)    $workedTime.textContent    = formatDuration(data.totalPaidMinutes);
+      if ($earnedMoney)   $earnedMoney.textContent   = formatMoney(settings.dailySalary);
+      if ($remainingTime) $remainingTime.textContent = '--';
+      if ($remainingLabel) $remainingLabel.textContent = '已完成';
+      break;
+    }
+    default: {
+      if ($workedTime)    $workedTime.textContent    = formatDuration(0);
+      if ($earnedMoney)   $earnedMoney.textContent   = formatMoney(0);
+      if ($remainingTime) $remainingTime.textContent = '--';
       break;
     }
   }
