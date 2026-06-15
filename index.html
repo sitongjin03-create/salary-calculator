@@ -111,25 +111,49 @@
               <button class="seg-btn" data-mode="no">否</button>
             </div>
           </div>
+          <!-- 计算周期 -->
+          <div class="setting-row">
+            <label class="setting-label">计算周期</label>
+            <div class="setting-control">
+              <input type="date" class="setting-input date-input" id="periodStart">
+              <span class="unit-text">至</span>
+              <input type="date" class="setting-input date-input" id="periodEnd">
+            </div>
+          </div>
           <!-- 休假日期 -->
           <div class="setting-row">
-            <label class="setting-label" for="vacationDays">休假日期</label>
-            <input type="text" class="setting-input date-list-input" id="vacationDays" placeholder="2025-06-20, 2025-06-21">
+            <label class="setting-label" id="vacationLabel">休假日期</label>
+            <div class="date-summary-area">
+              <span class="date-summary" id="vacationSummary">未设置</span>
+              <button class="btn-manage-dates" id="toggleVacationPanel">管理</button>
+            </div>
+          </div>
+          <div class="date-manage-panel hidden" id="vacationPanel">
+            <div class="date-chips" id="vacationChips"></div>
+            <div class="date-add-row">
+              <input type="date" class="setting-input date-pick-input" id="vacationDatePick">
+              <button class="btn-date-add" id="addVacationDate">添加</button>
+            </div>
           </div>
           <!-- 补班日期 -->
           <div class="setting-row">
-            <label class="setting-label" for="makeupDays">补班日期</label>
-            <input type="text" class="setting-input date-list-input" id="makeupDays" placeholder="2025-06-28">
+            <label class="setting-label" id="makeupLabel">补班日期</label>
+            <div class="date-summary-area">
+              <span class="date-summary" id="makeupSummary">未设置</span>
+              <button class="btn-manage-dates" id="toggleMakeupPanel">管理</button>
+            </div>
           </div>
-          <!-- 计算月份 -->
-          <div class="setting-row">
-            <label class="setting-label" for="calcMonth">计算月份</label>
-            <input type="month" class="setting-input" id="calcMonth" value="2025-06">
+          <div class="date-manage-panel hidden" id="makeupPanel">
+            <div class="date-chips" id="makeupChips"></div>
+            <div class="date-add-row">
+              <input type="date" class="setting-input date-pick-input" id="makeupDatePick">
+              <button class="btn-date-add" id="addMakeupDate">添加</button>
+            </div>
           </div>
-          <!-- 月计算结果 -->
+          <!-- 周期计算结果 -->
           <div class="monthly-summary" id="monthlySummary">
-            <div class="ms-row"><span>月工作天数</span><span class="ms-val" id="monthlyWorkdays">--</span></div>
-            <div class="ms-row"><span>预计月收入</span><span class="ms-val highlight" id="monthlyIncome">--</span></div>
+            <div class="ms-row"><span>周期工作天数</span><span class="ms-val" id="monthlyWorkdays">--</span></div>
+            <div class="ms-row"><span>预计期间收入</span><span class="ms-val highlight" id="monthlyIncome">--</span></div>
           </div>
         </div>
         <div class="settings-sheet-footer">

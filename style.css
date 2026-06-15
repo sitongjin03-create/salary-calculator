@@ -355,17 +355,107 @@ body {
   top: -8px;
 }
 
-/* 日期列表输入 */
-.date-list-input {
+/* 日期输入 & 摘要管理 */
+.date-input {
   width: auto !important;
   flex: 1;
-  text-align: left !important;
+  min-width: 0;
   font-size: 0.82rem !important;
+  padding: 0 8px !important;
 }
 
-.date-list-input::placeholder {
-  color: #C0C8C4;
+/* 摘要行 */
+.date-summary-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.date-summary {
+  font-size: 0.82rem;
+  color: var(--text-light);
+  white-space: nowrap;
+}
+
+.btn-manage-dates {
+  flex-shrink: 0;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid #DFE5E1;
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* 可折叠管理面板 */
+.date-manage-panel {
+  padding: 8px 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.date-manage-panel.hidden {
+  display: none !important;
+}
+
+.date-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.date-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--primary-lighter);
+  color: var(--primary);
+  padding: 4px 8px;
+  border-radius: 6px;
   font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.date-chip-remove {
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  color: var(--text-lighter);
+  padding: 0 2px;
+}
+
+.date-add-row {
+  display: flex;
+  gap: 6px;
+}
+
+.date-pick-input {
+  flex: 1;
+  min-width: 0;
+  height: 36px !important;
+  width: auto !important;
+  font-size: 0.8rem !important;
+  padding: 0 8px !important;
+}
+
+.btn-date-add {
+  flex-shrink: 0;
+  height: 36px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
 }
 
 /* 月薪摘要卡片 */
@@ -839,5 +929,13 @@ body {
   .ms-val.highlight { color: #D4A84C; }
   .settings-divider { border-top-color: #3A403D; }
   .settings-divider span { background: #2A302D; color: #6A706D; }
+  .date-chip { background: rgba(61,90,86,0.18); color: #B0C0BA; }
+  .date-chip-remove { color: #7A807D; }
+  .btn-date-add { background: #4A7066; }
+  .btn-date-add:active { background: #3D5A56; }
+  .date-pick-input { color-scheme: dark; }
+  .date-summary { color: #8A908D; }
+  .btn-manage-dates { background: rgba(45,50,48,0.8); border-color: #404540; color: #B0C0BA; }
+  .btn-manage-dates:active { background: #404540; }
 
 }

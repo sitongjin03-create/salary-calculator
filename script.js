@@ -35,9 +35,22 @@ var $restDayPicker = $('restDayPicker');
 var $holidayToggle = $('holidayToggle');
 var $vacationDays = $('vacationDays');
 var $makeupDays = $('makeupDays');
-var $calcMonth = $('calcMonth');
+var $periodStart = $('periodStart');
+var $periodEnd = $('periodEnd');
 var $monthlyWorkdays = $('monthlyWorkdays');
 var $monthlyIncome = $('monthlyIncome');
+var $vacationDatePick = $('vacationDatePick');
+var $addVacationDate = $('addVacationDate');
+var $makeupDatePick = $('makeupDatePick');
+var $addMakeupDate = $('addMakeupDate');
+var $vacationChips = $('vacationChips');
+var $makeupChips = $('makeupChips');
+var $vacationSummary = $('vacationSummary');
+var $makeupSummary = $('makeupSummary');
+var $toggleVacationPanel = $('toggleVacationPanel');
+var $toggleMakeupPanel = $('toggleMakeupPanel');
+var $vacationPanel = $('vacationPanel');
+var $makeupPanel = $('makeupPanel');
 
 // 默认设置
 var DEFAULT_SETTINGS = {
@@ -52,7 +65,8 @@ var DEFAULT_SETTINGS = {
   holidaysOff: true,
   vacationDays: [],
   makeupDays: [],
-  calcMonth: '',
+  periodStart: '',
+  periodEnd: '',
 };
 
 // 当前设置
@@ -64,10 +78,14 @@ var updateTimer = null;
 function init() {
   settings = Object.assign({}, DEFAULT_SETTINGS);
   loadSettings();
-  // 默认月份设为当前月
-  if (!settings.calcMonth) {
+  // 默认周期设为当前月
+  if (!settings.periodStart) {
     var now = new Date();
-    settings.calcMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+    var y = now.getFullYear();
+    var m = now.getMonth() + 1;
+    var lastDay = new Date(y, m, 0).getDate();
+    settings.periodStart = y + '-' + String(m).padStart(2, '0') + '-01';
+    settings.periodEnd = y + '-' + String(m).padStart(2, '0') + '-' + String(lastDay).padStart(2, '0');
   }
   // 确保日薪/月薪一致
   syncSalaries();
@@ -105,7 +123,7 @@ function saveSettings() {
 }
 
 function syncSalaries() {
-  var wd = countWorkdaysInMonth(settings.calcMonth);
+  var wd = countWorkdaysInPeriod(settings.periodStart, settings.periodEnd);
   if (wd <= 0) wd = 22;
   if (settings.salaryMode === 'daily') {
     settings.monthlySalary = Math.round(settings.dailySalary * wd * 100) / 100;
@@ -120,9 +138,10 @@ function populateForm() {
   if ($dailySalary)         $dailySalary.value         = settings.dailySalary;
   if ($monthlySalary)       $monthlySalary.value       = settings.monthlySalary;
   if ($breakTime)           $breakTime.value           = settings.breakMinutes;
-  if ($calcMonth)           $calcMonth.value           = settings.calcMonth;
-  if ($vacationDays)        $vacationDays.value        = settings.vacationDays.join(', ');
-  if ($makeupDays)          $makeupDays.value          = settings.makeupDays.join(', ');
+  if ($periodStart)        $periodStart.value        = settings.periodStart;
+  if ($periodEnd)          $periodEnd.value          = settings.periodEnd;
+  renderVacationSummary();
+  renderMakeupSummary();
   // 薪资模式
   setActiveSeg($salaryModeToggle, settings.salaryMode);
   toggleSalaryRows();
@@ -210,17 +229,47 @@ function bindEvents() {
     updateMonthlySummary();
   });
 
-  // 月份 / 日期变化
-  if ($calcMonth) $calcMonth.addEventListener('change', function () {
-    settings.calcMonth = this.value;
+  // 周期 / 日期变化
+  if ($periodStart) $periodStart.addEventListener('change', function () {
+    settings.periodStart = this.value;
     updateMonthlySummary();
   });
-  if ($vacationDays) $vacationDays.addEventListener('change', function () {
-    settings.vacationDays = parseDateList(this.value);
+  if ($periodEnd) $periodEnd.addEventListener('change', function () {
+    settings.periodEnd = this.value;
     updateMonthlySummary();
   });
-  if ($makeupDays) $makeupDays.addEventListener('change', function () {
-    settings.makeupDays = parseDateList(this.value);
+  // 休假日期管理面板切换
+  if ($toggleVacationPanel && $vacationPanel) $toggleVacationPanel.addEventListener('click', function () {
+    var isHidden = $vacationPanel.classList.toggle('hidden');
+    this.textContent = isHidden ? '管理' : '收起';
+    if (!isHidden) { renderDateChips($vacationChips, settings.vacationDays, 'vacation'); }
+  });
+  // 补班日期管理面板切换
+  if ($toggleMakeupPanel && $makeupPanel) $toggleMakeupPanel.addEventListener('click', function () {
+    var isHidden = $makeupPanel.classList.toggle('hidden');
+    this.textContent = isHidden ? '管理' : '收起';
+    if (!isHidden) { renderDateChips($makeupChips, settings.makeupDays, 'makeup'); }
+  });
+  // 添加休假日期
+  if ($addVacationDate && $vacationDatePick) $addVacationDate.addEventListener('click', function () {
+    var d = $vacationDatePick.value;
+    if (!d) return;
+    if (settings.vacationDays.indexOf(d) < 0) settings.vacationDays.push(d);
+    settings.vacationDays.sort();
+    renderDateChips($vacationChips, settings.vacationDays, 'vacation');
+    renderVacationSummary();
+    $vacationDatePick.value = '';
+    updateMonthlySummary();
+  });
+  // 添加补班日期
+  if ($addMakeupDate && $makeupDatePick) $addMakeupDate.addEventListener('click', function () {
+    var d = $makeupDatePick.value;
+    if (!d) return;
+    if (settings.makeupDays.indexOf(d) < 0) settings.makeupDays.push(d);
+    settings.makeupDays.sort();
+    renderDateChips($makeupChips, settings.makeupDays, 'makeup');
+    renderMakeupSummary();
+    $makeupDatePick.value = '';
     updateMonthlySummary();
   });
 
@@ -244,7 +293,8 @@ function bindEvents() {
       settings.endTime = et;
       settings.breakMinutes = bm;
       settings.dailySalary = ds;
-      if ($calcMonth) settings.calcMonth = $calcMonth.value;
+      if ($periodStart) settings.periodStart = $periodStart.value;
+      if ($periodEnd) settings.periodEnd = $periodEnd.value;
 
       // 根据模式同步薪资
       syncSalaries();
@@ -306,33 +356,55 @@ function parseDateList(str) {
 }
 
 /* ===== 月度工作日计算 ===== */
-function countWorkdaysInMonth(monthStr) {
-  if (!monthStr) return 22;
-  var parts = monthStr.split('-');
-  var y = parseInt(parts[0]), m = parseInt(parts[1]);
-  var total = new Date(y, m, 0).getDate(); // days in month
-  var count = 0;
-  for (var d = 1; d <= total; d++) {
-    var date = new Date(y, m - 1, d);
-    var dayOfWeek = date.getDay(); // 0=Sun, 6=Sat
-    var isoDay = dayOfWeek === 0 ? 7 : dayOfWeek; // 1=Mon, 7=Sun
-    var key = y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+// 中国法定节假日（2025-2026 主要假期）
+var CN_HOLIDAYS_2025 = [
+  '2025-01-01','2025-01-28','2025-01-29','2025-01-30','2025-01-31','2025-02-01','2025-02-02','2025-02-03',
+  '2025-04-04','2025-04-05','2025-04-06',
+  '2025-05-01','2025-05-02','2025-05-03','2025-05-04','2025-05-05',
+  '2025-05-31','2025-06-01','2025-06-02',
+  '2025-10-01','2025-10-02','2025-10-03','2025-10-04','2025-10-05','2025-10-06','2025-10-07','2025-10-08',
+  '2025-10-06'
+];
+var CN_HOLIDAYS_2026 = [
+  '2026-01-01','2026-02-17','2026-02-18','2026-02-19','2026-02-20','2026-02-21','2026-02-22','2026-02-23',
+  '2026-04-05','2026-04-06',
+  '2026-05-01','2026-05-02','2026-05-03','2026-05-04','2026-05-05',
+  '2026-06-19','2026-06-20','2026-06-21',
+  '2026-10-01','2026-10-02','2026-10-03','2026-10-04','2026-10-05','2026-10-06','2026-10-07',
+  '2026-10-06'
+];
+var ALL_HOLIDAYS = CN_HOLIDAYS_2025.concat(CN_HOLIDAYS_2026);
 
+function countWorkdaysInPeriod(startStr, endStr) {
+  if (!startStr || !endStr) return 22;
+  var start = new Date(startStr + 'T00:00:00');
+  var end = new Date(endStr + 'T00:00:00');
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) return 22;
+  var count = 0;
+  var cur = new Date(start);
+  while (cur <= end) {
+    var y = cur.getFullYear();
+    var m = String(cur.getMonth() + 1).padStart(2, '0');
+    var d = String(cur.getDate()).padStart(2, '0');
+    var key = y + '-' + m + '-' + d;
+    var dayOfWeek = cur.getDay();
+    var isoDay = dayOfWeek === 0 ? 7 : dayOfWeek;
+    // Check makeup first (highest priority)
+    if (settings.makeupDays.indexOf(key) >= 0) { count++; cur.setDate(cur.getDate() + 1); continue; }
     // Check vacation
-    if (settings.vacationDays.indexOf(key) >= 0) continue;
-    // Check makeup
-    if (settings.makeupDays.indexOf(key) >= 0) { count++; continue; }
+    if (settings.vacationDays.indexOf(key) >= 0) { cur.setDate(cur.getDate() + 1); continue; }
+    // Check statutory holidays
+    if (settings.holidaysOff && ALL_HOLIDAYS.indexOf(key) >= 0) { cur.setDate(cur.getDate() + 1); continue; }
     // Check weekend
-    if (settings.restDays.indexOf(isoDay) >= 0) continue;
-    // Check holidays (simplified: only exclude if holidaysOff is true and it's a weekday)
-    // For now we rely on user manually adding vacations
+    if (settings.restDays.indexOf(isoDay) >= 0) { cur.setDate(cur.getDate() + 1); continue; }
     count++;
+    cur.setDate(cur.getDate() + 1);
   }
   return count;
 }
 
 function updateMonthlySummary() {
-  var wd = countWorkdaysInMonth(settings.calcMonth);
+  var wd = countWorkdaysInPeriod(settings.periodStart, settings.periodEnd);
   syncSalariesQuick(wd);
   if ($monthlyWorkdays) $monthlyWorkdays.textContent = wd + ' 天';
   if ($monthlyIncome) $monthlyIncome.textContent = formatMoney(settings.monthlySalary);
@@ -345,6 +417,50 @@ function syncSalariesQuick(workdays) {
   } else {
     settings.dailySalary = Math.round(settings.monthlySalary / workdays * 100) / 100;
   }
+}
+
+// 日期 Chip 渲染（仅面板内使用）
+function renderDateChips(container, dates, type) {
+  if (!container) return;
+  container.innerHTML = '';
+  for (var i = 0; i < dates.length; i++) {
+    (function (dateVal) {
+      var chip = document.createElement('span');
+      chip.className = 'date-chip';
+      chip.textContent = dateVal;
+      var x = document.createElement('span');
+      x.className = 'date-chip-remove';
+      x.textContent = '×';
+      x.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (type === 'vacation') {
+          settings.vacationDays = settings.vacationDays.filter(function (dd) { return dd !== dateVal; });
+        } else {
+          settings.makeupDays = settings.makeupDays.filter(function (dd) { return dd !== dateVal; });
+        }
+        renderDateChips(container, type === 'vacation' ? settings.vacationDays : settings.makeupDays, type);
+        if (type === 'vacation') renderVacationSummary();
+        else renderMakeupSummary();
+        updateMonthlySummary();
+      });
+      chip.appendChild(x);
+      container.appendChild(chip);
+    })(dates[i]);
+  }
+}
+
+// 休假摘要渲染
+function renderVacationSummary() {
+  if (!$vacationSummary) return;
+  var n = settings.vacationDays.length;
+  $vacationSummary.textContent = n > 0 ? '已选择 ' + n + ' 天休假' : '未设置';
+}
+
+// 补班摘要渲染
+function renderMakeupSummary() {
+  if (!$makeupSummary) return;
+  var n = settings.makeupDays.length;
+  $makeupSummary.textContent = n > 0 ? '已选择 ' + n + ' 天补班' : '未设置';
 }
 
 /* ===== 核心计算逻辑 ===== */
@@ -379,7 +495,11 @@ function calculateState() {
   const progress = totalPaidMinutes > 0 ? Math.min(1, Math.max(0, paidElapsed / totalPaidMinutes)) : 0;
 
   // 已赚金额
-  const earned = progress * settings.dailySalary;
+  var earned = progress * settings.dailySalary;
+	  // 时薪 & 秒薪
+	  var paidHours = totalPaidMinutes / 60;
+	  var hourlyRate = paidHours > 0 ? settings.dailySalary / paidHours : 0;
+	  var secondlyRate = totalPaidMinutes > 0 ? settings.dailySalary / (totalPaidMinutes * 60) : 0;
 
   // 状态判定
   let state; // 'idle' | 'working' | 'done'
@@ -402,6 +522,8 @@ function calculateState() {
     paidElapsed,
     progress,
     earned,
+    hourlyRate,
+    secondlyRate,
     state,
   };
 }
