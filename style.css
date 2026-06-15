@@ -245,17 +245,20 @@ body {
 .setting-control {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   flex-shrink: 0;
+  flex-wrap: nowrap;
+  overflow: hidden;
 }
 
 /* ¥ 和 分钟 纯文字 */
 .unit-text {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 500;
   color: var(--text-light);
   user-select: none;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* 统一输入框 —— 四行完全一致 */
@@ -360,8 +363,9 @@ body {
   width: auto !important;
   flex: 1;
   min-width: 0;
-  font-size: 0.82rem !important;
-  padding: 0 8px !important;
+  font-size: 0.75rem !important;
+  padding: 0 4px !important;
+  letter-spacing: -0.2px;
 }
 
 /* 摘要行 */
@@ -769,6 +773,15 @@ body {
 
   .setting-label {
     font-size: 0.82rem;
+  }
+
+  .date-input {
+    font-size: 0.68rem !important;
+    padding: 0 2px !important;
+  }
+
+  .setting-control {
+    gap: 2px;
   }
 }
 
