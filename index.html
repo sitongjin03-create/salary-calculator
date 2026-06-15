@@ -37,27 +37,99 @@
           <h2 class="settings-sheet-title">收益参数设置</h2>
         </div>
         <div class="settings-sheet-body">
+          <!-- 薪资模式 -->
           <div class="setting-row">
-            <label class="setting-label" for="startTime">上班时间</label>
-            <input type="time" class="setting-input" id="startTime" value="09:00">
+            <label class="setting-label">薪资模式</label>
+            <div class="segmented-control" id="salaryModeToggle">
+              <button class="seg-btn active" data-mode="daily">日薪</button>
+              <button class="seg-btn" data-mode="monthly">月薪</button>
+            </div>
           </div>
-          <div class="setting-row">
-            <label class="setting-label" for="endTime">下班时间</label>
-            <input type="time" class="setting-input" id="endTime" value="18:00">
-          </div>
-          <div class="setting-row">
+          <!-- 日薪 -->
+          <div class="setting-row salary-row" id="dailySalaryRow">
             <label class="setting-label" for="dailySalary">日薪</label>
             <div class="setting-control">
               <span class="unit-text">¥</span>
               <input type="text" inputmode="numeric" pattern="[0-9]*\.?[0-9]*" class="setting-input" id="dailySalary" value="500" placeholder="500">
             </div>
           </div>
+          <!-- 月薪 -->
+          <div class="setting-row salary-row hidden" id="monthlySalaryRow">
+            <label class="setting-label" for="monthlySalary">月薪</label>
+            <div class="setting-control">
+              <span class="unit-text">¥</span>
+              <input type="text" inputmode="numeric" pattern="[0-9]*\.?[0-9]*" class="setting-input" id="monthlySalary" value="11000" placeholder="11000">
+            </div>
+          </div>
+          <!-- 上班时间 -->
+          <div class="setting-row">
+            <label class="setting-label" for="startTime">上班时间</label>
+            <input type="time" class="setting-input" id="startTime" value="09:00">
+          </div>
+          <!-- 下班时间 -->
+          <div class="setting-row">
+            <label class="setting-label" for="endTime">下班时间</label>
+            <input type="time" class="setting-input" id="endTime" value="18:00">
+          </div>
+          <!-- 午休时长 -->
           <div class="setting-row">
             <label class="setting-label" for="breakTime">午休时长</label>
             <div class="setting-control">
               <input type="text" inputmode="numeric" pattern="[0-9]*" class="setting-input" id="breakTime" value="60" placeholder="60">
               <span class="unit-text">分钟</span>
             </div>
+          </div>
+          <!-- 分隔 -->
+          <div class="settings-divider"><span>月薪计算设置</span></div>
+          <!-- 工作日模式 -->
+          <div class="setting-row">
+            <label class="setting-label">工作日模式</label>
+            <div class="segmented-control" id="workModeToggle">
+              <button class="seg-btn active" data-mode="double">双休</button>
+              <button class="seg-btn" data-mode="single">单休</button>
+              <button class="seg-btn" data-mode="custom">自定义</button>
+            </div>
+          </div>
+          <!-- 自定义休息日 -->
+          <div class="setting-row hidden" id="customRestRow">
+            <label class="setting-label">每周休息日</label>
+            <div class="weekday-picker" id="restDayPicker">
+              <button class="wd-btn active" data-day="6">六</button>
+              <button class="wd-btn active" data-day="7">日</button>
+              <button class="wd-btn" data-day="1">一</button>
+              <button class="wd-btn" data-day="2">二</button>
+              <button class="wd-btn" data-day="3">三</button>
+              <button class="wd-btn" data-day="4">四</button>
+              <button class="wd-btn" data-day="5">五</button>
+            </div>
+          </div>
+          <!-- 法定节假日 -->
+          <div class="setting-row">
+            <label class="setting-label">法定节假日休息</label>
+            <div class="segmented-control" id="holidayToggle">
+              <button class="seg-btn active" data-mode="yes">是</button>
+              <button class="seg-btn" data-mode="no">否</button>
+            </div>
+          </div>
+          <!-- 休假日期 -->
+          <div class="setting-row">
+            <label class="setting-label" for="vacationDays">休假日期</label>
+            <input type="text" class="setting-input date-list-input" id="vacationDays" placeholder="2025-06-20, 2025-06-21">
+          </div>
+          <!-- 补班日期 -->
+          <div class="setting-row">
+            <label class="setting-label" for="makeupDays">补班日期</label>
+            <input type="text" class="setting-input date-list-input" id="makeupDays" placeholder="2025-06-28">
+          </div>
+          <!-- 计算月份 -->
+          <div class="setting-row">
+            <label class="setting-label" for="calcMonth">计算月份</label>
+            <input type="month" class="setting-input" id="calcMonth" value="2025-06">
+          </div>
+          <!-- 月计算结果 -->
+          <div class="monthly-summary" id="monthlySummary">
+            <div class="ms-row"><span>月工作天数</span><span class="ms-val" id="monthlyWorkdays">--</span></div>
+            <div class="ms-row"><span>预计月收入</span><span class="ms-val highlight" id="monthlyIncome">--</span></div>
           </div>
         </div>
         <div class="settings-sheet-footer">
@@ -69,16 +141,10 @@
 
     <!-- Main Display Card -->
     <div class="main-card" id="mainCard">
-      <!-- Current Time -->
-      <div class="time-section">
-        <div class="current-time" id="currentTime">00:00:00</div>
-        <div class="current-date" id="currentDate">2024年1月1日 星期一</div>
-      </div>
-
-      <!-- Status -->
-      <div class="status-section" id="statusSection">
-        <div class="status-indicator" id="statusIndicator"></div>
-        <div class="status-text" id="statusText">加载中...</div>
+      <!-- Hero: 今日已收入 -->
+      <div class="hero-section">
+        <div class="hero-label">今日已收入</div>
+        <div class="hero-value" id="earnedMoney">¥0.00</div>
       </div>
 
       <!-- Progress Bar -->
@@ -89,20 +155,37 @@
         <div class="progress-label" id="progressLabel">0%</div>
       </div>
 
-      <!-- Stats Grid -->
+      <!-- Status -->
+      <div class="status-section" id="statusSection">
+        <div class="status-indicator" id="statusIndicator"></div>
+        <div class="status-text" id="statusText">加载中...</div>
+      </div>
+
+      <!-- Stats Grid: 2x2 -->
       <div class="stats-grid">
         <div class="stat-item">
           <div class="stat-value" id="workedTime">0h 0m</div>
           <div class="stat-label">已工作</div>
         </div>
-        <div class="stat-item highlight">
-          <div class="stat-value money" id="earnedMoney">¥0.00</div>
-          <div class="stat-label">已收入</div>
-        </div>
         <div class="stat-item">
           <div class="stat-value" id="remainingTime">--</div>
           <div class="stat-label" id="remainingLabel">剩余时间</div>
         </div>
+        <div class="stat-item">
+          <div class="stat-value" id="hourlyRate">--</div>
+          <div class="stat-label">时薪</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="secondlyRate">--</div>
+          <div class="stat-label">秒薪</div>
+        </div>
+      </div>
+
+      <!-- Time (small, secondary) -->
+      <div class="meta-section">
+        <span class="meta-time" id="currentTime">00:00:00</span>
+        <span class="meta-sep">·</span>
+        <span class="meta-date" id="currentDate">2024年1月1日 星期一</span>
       </div>
     </div>
 

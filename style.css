@@ -282,6 +282,125 @@ body {
   box-shadow: 0 0 0 3px rgba(61, 90, 86, 0.08);
 }
 
+/* ===== 设置面板扩展组件 ===== */
+/* 分段控件 */
+.segmented-control {
+  display: flex;
+  background: #EEF0EE;
+  border-radius: 10px;
+  padding: 3px;
+  flex-shrink: 0;
+}
+
+.seg-btn {
+  padding: 7px 14px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.seg-btn.active {
+  background: #FFFFFF;
+  color: var(--primary);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* 工作日选择器 */
+.weekday-picker {
+  display: flex;
+  gap: 4px;
+}
+
+.wd-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid #DDE1DF;
+  background: #FFFFFF;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: var(--transition);
+  padding: 0;
+}
+
+.wd-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #FFFFFF;
+}
+
+/* 设置分隔线 */
+.settings-divider {
+  text-align: center;
+  border-top: 1px solid #E8EBE9;
+  margin: 4px 0;
+}
+
+.settings-divider span {
+  display: inline-block;
+  background: #FFFFFF;
+  padding: 0 12px;
+  font-size: 0.75rem;
+  color: var(--text-lighter);
+  position: relative;
+  top: -8px;
+}
+
+/* 日期列表输入 */
+.date-list-input {
+  width: auto !important;
+  flex: 1;
+  text-align: left !important;
+  font-size: 0.82rem !important;
+}
+
+.date-list-input::placeholder {
+  color: #C0C8C4;
+  font-size: 0.75rem;
+}
+
+/* 月薪摘要卡片 */
+.monthly-summary {
+  background: var(--primary-lighter);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ms-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.ms-val {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.ms-val.highlight {
+  color: var(--gold-dark);
+  font-size: 1rem;
+}
+
+/* 隐藏工具类 */
+.hidden {
+  display: none !important;
+}
+
 /* ===== Main Card ===== */
 .main-card {
   background: rgba(255, 255, 255, 0.9);
@@ -302,24 +421,27 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ===== Time Section ===== */
-.time-section {
+/* ===== Hero Section: 今日已收入 ===== */
+.hero-section {
   text-align: center;
+  padding: 4px 0 8px;
 }
 
-.current-time {
-  font-size: 3rem;
-  font-weight: 700;
-  color: var(--primary);
-  letter-spacing: 0px;
-  font-variant-numeric: tabular-nums;
-  font-family: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
-}
-
-.current-date {
-  font-size: 0.82rem;
+.hero-label {
+  font-size: 0.85rem;
+  font-weight: 500;
   color: var(--text-light);
-  margin-top: 4px;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.hero-value {
+  font-size: 3.2rem;
+  font-weight: 800;
+  color: var(--gold-dark);
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
 }
 
 /* ===== Status Section ===== */
@@ -415,41 +537,57 @@ body {
 /* ===== Stats Grid ===== */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
 }
 
 .stat-item {
   text-align: center;
-  padding: 16px 8px;
+  padding: 14px 8px;
   background: var(--primary-lighter);
   border-radius: var(--radius-sm);
   transition: var(--transition);
 }
 
-.stat-item.highlight {
-  background: var(--gold-light);
-  box-shadow: 0 2px 12px rgba(200, 150, 62, 0.12);
-}
-
 .stat-value {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--text);
   font-variant-numeric: tabular-nums;
 }
 
-.stat-value.money {
-  color: var(--gold-dark);
-  font-size: 1.1rem;
+.stat-label {
+  font-size: 0.68rem;
+  color: var(--text-light);
+  margin-top: 3px;
 }
 
-.stat-label {
-  font-size: 0.7rem;
+/* ===== Meta Section (time + date) ===== */
+.meta-section {
+  text-align: center;
+  padding-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.meta-time {
+  font-size: 0.85rem;
+  font-weight: 600;
   color: var(--text-light);
-  margin-top: 4px;
-  text-transform: none;
-  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  font-family: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+}
+
+.meta-sep {
+  color: var(--text-lighter);
+}
+
+.meta-date {
+  font-size: 0.78rem;
+  color: var(--text-lighter);
 }
 
 /* ===== Footer ===== */
@@ -499,8 +637,8 @@ body {
     font-size: 0.7rem;
   }
 
-  .current-time {
-    font-size: 2.2rem;
+  .hero-value {
+    font-size: 2.6rem;
   }
 
   .stats-grid {
@@ -508,7 +646,7 @@ body {
   }
 
   .stat-item {
-    padding: 12px 4px;
+    padding: 10px 4px;
   }
 
   .stat-value {
@@ -516,12 +654,13 @@ body {
     word-break: keep-all;
   }
 
-  .stat-value.money {
-    font-size: 0.85rem;
+  .stat-label {
+    font-size: 0.63rem;
   }
 
-  .stat-label {
-    font-size: 0.65rem;
+  .seg-btn {
+    padding: 6px 10px;
+    font-size: 0.75rem;
   }
 
   .main-card {
@@ -685,4 +824,20 @@ body {
   .toast {
     background: rgba(30, 35, 33, 0.95);
   }
+
+  .hero-value { color: #D4A84C; }
+  .meta-time { color: #8A908D; }
+  .meta-date, .meta-sep { color: #5A605E; }
+  .segmented-control { background: #353A38; }
+  .seg-btn { color: #8A908D; }
+  .seg-btn.active { background: #4A504D; color: #C8D5D0; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+  .wd-btn { background: rgba(45, 50, 48, 0.8); border-color: #404540; color: #8A908D; }
+  .wd-btn.active { background: #4A7066; border-color: #5C8A7E; color: #E0E4E2; }
+  .monthly-summary { background: rgba(255,255,255,0.04); }
+  .ms-row { color: #A0A8A5; }
+  .ms-val { color: #B0C0BA; }
+  .ms-val.highlight { color: #D4A84C; }
+  .settings-divider { border-top-color: #3A403D; }
+  .settings-divider span { background: #2A302D; color: #6A706D; }
+
 }
